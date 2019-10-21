@@ -46,7 +46,7 @@ class S3ToRedshiftOperator(BaseOperator):
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
         #         Remove existing data in staging table
         self.log.info("Clearing data from destination Redshift table")
-        redshift.run("DELETE FROM {}".format(self.table))
+        redshift.run("TRUNCATE TABLE {}".format(self.table))
         #         Copy new data from S3 to Redshift
         self.log.info("Copying data from S3 to Redshift")
         rendered_key = self.s3_key.format(**context)

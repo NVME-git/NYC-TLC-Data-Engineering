@@ -103,7 +103,21 @@ class SqlQueries:
             )
         '''
 
-    create_tables = [create_taxi_zones, create_stage_green, create_stage_yellow, create_stage_fhv, create_stage_fhvhv]
+    create_stage_tables = [create_taxi_zones, create_stage_green, create_stage_yellow, create_stage_fhv, create_stage_fhvhv]
+
+    create_time_table = """
+        CREATE TABLE IF NOT EXISTS time(
+            trip_timestamp  TIMESTAMP NOT NULL sortkey, 
+            hour            INT, 
+            day             INT, 
+            week            INT, 
+            month           INT, 
+            year            INT, 
+            weekday         INT
+        );
+    """
+
+    create_data_tables = [create_time_table]
 
     analyse_pick_up = '''
         select 
