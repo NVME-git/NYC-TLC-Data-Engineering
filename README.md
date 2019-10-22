@@ -14,7 +14,7 @@ vehicles appropriately where needed.
 ##### Taxi zone map of Brooklyn
 ![Brooklyn Map](maps/taxi_zone_map_brooklyn.jpg)
 
-## Data investigation
+## Project investigation
 
 The New York City Taxi and Limousine Commission [(NYC-TLC)](https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page), 
 created in 1971, is the agency responsible for licensing and 
@@ -65,7 +65,7 @@ location of the pickup (see section on matching zone IDs below) were provided
 and the drop-off location. In 2017, the TLC also started to receive information on shared rides, like those offered 
 in services like Lyft Line and Uber Pool. A trip is only considered shared if it was reserved specially with one of 
 these services. See note below for more information on shared rides. After the high volume license type was created 
-in Feb 2019, a high-volume license number was added. These are called FHVHV trips.
+in February 2019, a high-volume license number was added. These are called FHVHV trips.
 This is an overall identifier for app companies who may have multiple base licenses.  
 The [FHV data dictionary](https://data.cityofnewyork.us/api/views/am94-epxh/files/0341cc01-520a-49eb-bc3c-94f6c35c6355?download=true&filename=data_dictionary_trip_records_fhv.pdf) 
 and [FHVHV data dictionary](https://www1.nyc.gov/assets/tlc/downloads/pdf/data_dictionary_trip_records_hvfhs.pdf)
@@ -84,4 +84,10 @@ The data is currently available on the [Open Data Portal](https://data.cityofnew
 ##### Taxi zone map of Bronx
 ![Bronx Map](maps/taxi_zone_map_bronx.jpg)
  
+ ## Data investigation
  
+Only data from 2019 onwards will be considered because of the recent changes in February 2019.
+ Data for each taxi type is stored in a CSV file for each  month in  the **'trip data'** folder. 
+ Information about the different taxi zones and borough maps are located in the **'misc'** folder.
+
+ The data required for this project is of very high quality. The full data set has ...
