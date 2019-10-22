@@ -42,7 +42,7 @@ providers. The trip  data  was  not  created  by  the  TLC,  and  TLC cannot gua
 The [yellow taxi data dictionary](https://data.cityofnewyork.us/api/views/biws-g3hs/files/eb3ccc47-317f-4b2a-8f49-5a684b0b1ecc?download=true&filename=data_dictionary_trip_records_yellow.pdf) 
 can be downloaded for further reference.
 
-####Green taxi trips
+#### Green taxi trips
 
 Green taxis, also known as boro taxis and street-hail liveries, were introduced in August of 2013 to improve   taxi   
 service   and   availability   in   the boroughs. Green taxis may respond to street hails, but  only  in  the  areas  
@@ -67,21 +67,9 @@ in services like Lyft Line and Uber Pool. A trip is only considered shared if it
 these services. See note below for more information on shared rides. After the high volume license type was created 
 in Feb 2019, a high-volume license number was added. These are called FHVHV trips.
 This is an overall identifier for app companies who may have multiple base licenses.  
-Both the [FHV data dictionary](https://data.cityofnewyork.us/api/views/am94-epxh/files/0341cc01-520a-49eb-bc3c-94f6c35c6355?download=true&filename=data_dictionary_trip_records_fhv.pdf) 
+The [FHV data dictionary](https://data.cityofnewyork.us/api/views/am94-epxh/files/0341cc01-520a-49eb-bc3c-94f6c35c6355?download=true&filename=data_dictionary_trip_records_fhv.pdf) 
 and [FHVHV data dictionary](https://www1.nyc.gov/assets/tlc/downloads/pdf/data_dictionary_trip_records_hvfhs.pdf)
 can be downloaded for further reference.
-
-#### Shared trip insights
-
-In the 2018 FHV records, there is a field called SR_Flag, which is supposed to indicate if the trip was a part of a 
-shared ride chain offered by a High Volume FHScompany (e.g. Uber Pool, Lyft Line). For shared trips, the value is 1. 
-For non-shared rides, this field is null. NOTE: For most High Volume FHScompanies, only shared rides that were 
-requested AND matched to  another  shared-ride  request  over  the  course  of  the  journey  are  flagged.  
-However,  Lyft (hvfhs_license_num=’HV0005’) also flags rides for which a shared ride was requested but another
- passenger was not successfully matched to share the trip—therefore, trips records with SR_Flag=1 from those two 
- bases could indicate EITHER a trip in ashared trip chain OR a trip for which a shared ride  was  requested  but  
- never  matched.  Users  should  anticipate  an  overcount  of  successfully shared trips completed by Lyft.
- Note also that Juno does not offer shared trips at this time.
 
 #### Taxi zone lookup table
 
