@@ -2,6 +2,7 @@ data/*
 logs/*
 airflow.cfg
 airflow.db
+airflow.db-journal
 airflow-webserver.pid
 unittests.cfg
 *.pyc
