@@ -7,30 +7,6 @@ class SqlQueries:
         zone VARCHAR(255)
     )
     '''
-    old_create_stage_green = '''
-    CREATE TABLE IF NOT EXISTS public.stage_green (
-        VendorID                VARCHAR(255),
-        lpep_pickup_datetime    VARCHAR(255),
-        lpep_dropoff_datetime   VARCHAR(255),
-        Store_and_fwd_flag      VARCHAR(255),
-        RateCodeID              VARCHAR(255),
-        Pickup_longitude        VARCHAR(255),
-        Pickup_latitude	        VARCHAR(255),
-        Dropoff_longitude	    VARCHAR(255),
-        Dropoff_latitude        VARCHAR(255),
-        Passenger_count	        VARCHAR(255),
-        Trip_distance	        VARCHAR(255),
-        Fare_amount	            VARCHAR(255),
-        Extra	                VARCHAR(255),
-        MTA_tax	                VARCHAR(255),
-        Tip_amount	            VARCHAR(255),
-        Tolls_amount	        VARCHAR(255),
-        Ehail_fee	            VARCHAR(255),
-        Total_amount	        VARCHAR(255),
-        Payment_type	        VARCHAR(255),
-        Trip_type               VARCHAR(255)
-    )
-'''
 
     create_stage_green = '''
         CREATE TABLE IF NOT EXISTS public.stage_green (
@@ -103,7 +79,13 @@ class SqlQueries:
             )
         '''
 
-    create_stage_tables = [create_taxi_zones, create_stage_green, create_stage_yellow, create_stage_fhv, create_stage_fhvhv]
+    create_stage_tables = [
+        create_taxi_zones,
+        create_stage_green,
+        create_stage_yellow,
+        create_stage_fhv,
+        create_stage_fhvhv
+    ]
 
     create_time_table = """
         CREATE TABLE IF NOT EXISTS time(
@@ -118,6 +100,61 @@ class SqlQueries:
     """
 
     create_data_tables = [create_time_table]
+
+    move_time_pickup_green = '''
+        INSERT INTO public.time (trip_timestamp, hour, day, week, month, year, weekday)
+        SELECT 	to_date (lpep_pickup_datetime, 'YYYY-MM-DD HH24:MI:SS') as DT, 
+                extract(hour from DT), 
+                extract(day from DT), 
+                extract(week from DT), 
+                extract(month from DT), 
+                extract(year from DT), 
+                extract(dayofweek from DT)
+        FROM public.stage_green
+    '''
+
+    move_time_drop_off_green = '''
+            INSERT INTO public.time (trip_timestamp, hour, day, week, month, year, weekday)
+            SELECT 	to_date (lpep_pickup_datetime, 'YYYY-MM-DD HH24:MI:SS') as DT, 
+                    extract(hour from DT), 
+                    extract(day from DT), 
+                    extract(week from DT), 
+                    extract(month from DT), 
+                    extract(year from DT), 
+                    extract(dayofweek from DT)
+            FROM public.stage_green
+        '''
+
+    move_time_pickup_yellow = '''
+        INSERT INTO public.time (trip_timestamp, hour, day, week, month, year, weekday)
+        SELECT 	to_date (tpep_pickup_datetime, 'YYYY-MM-DD HH24:MI:SS') as DT, 
+                extract(hour from DT), 
+                extract(day from DT), 
+                extract(week from DT), 
+                extract(month from DT), 
+                extract(year from DT), 
+                extract(dayofweek from DT)
+        FROM public.stage_yellow
+    '''
+
+    move_time_drop_off_yellow = '''
+            INSERT INTO public.time (trip_timestamp, hour, day, week, month, year, weekday)
+            SELECT 	to_date (tpep_pickup_datetime, 'YYYY-MM-DD HH24:MI:SS') as DT, 
+                    extract(hour from DT), 
+                    extract(day from DT), 
+                    extract(week from DT), 
+                    extract(month from DT), 
+                    extract(year from DT), 
+                    extract(dayofweek from DT)
+            FROM public.stage_yellow
+        '''
+
+    move_time_data = [
+        move_time_pickup_green,
+        move_time_drop_off_green,
+        move_time_pickup_yellow,
+        move_time_drop_off_yellow
+    ]
 
     analyse_pick_up = '''
         select 
@@ -156,3 +193,8 @@ class SqlQueries:
             10
         ;
     '''
+
+    analysisQueries = [
+        analyse_pick_up,
+        analyse_drop_off
+    ]

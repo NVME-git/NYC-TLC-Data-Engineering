@@ -8,7 +8,7 @@ from operators import S3ToRedshiftOperator
 default_args = {
     'owner': 'nabeel',
     'start_date': datetime(2019, 1, 1),
-    'end_date': datetime(2019, 7, 1),
+    # 'end_date': datetime(2019, 7, 1),
     'depends_on_past': False,
     'email_on_failure': False,
     'email_on_retry': False,
@@ -89,5 +89,15 @@ t2 = PostgresOperator(
     autocommit=True
 )
 
+t3 = PostgresOperator(
+    dag=dag,
+    task_id='move_time_data',
+    postgres_conn_id='redshift',
+    sql=SqlQueries.move_time_data,
+    autocommit=True
+)
+
+
 # t0 >> [t1a, t1b, t1c, t1d, t1e] >> t2
 
+t2 >> t3
