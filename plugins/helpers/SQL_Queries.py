@@ -10,72 +10,72 @@ class SqlQueries:
 
     create_stage_green = '''
         CREATE TABLE IF NOT EXISTS public.stage_green (
-            VendorID                VARCHAR(255),
-            lpep_pickup_datetime    VARCHAR(255),
-            lpep_dropoff_datetime   VARCHAR(255),
-            store_and_fwd_flag      VARCHAR(255),
-            RatecodeID              VARCHAR(255),
-            PULocationID            VARCHAR(255),
-            DOLocationID            VARCHAR(255),
-            passenger_count         VARCHAR(255),
-            trip_distance           VARCHAR(255),
-            fare_amount             VARCHAR(255),
-            extra                   VARCHAR(255),
-            mta_tax                 VARCHAR(255),
-            tip_amount              VARCHAR(255),    
-            tolls_amount            VARCHAR(255),
-            ehail_fee               VARCHAR(255),
-            improvement_surcharge   VARCHAR(255),
-            total_amount            VARCHAR(255),
-            payment_type            VARCHAR(255),
-            trip_type               VARCHAR(255),
-            congestion_surcharge    VARCHAR(255)
+            VendorID                VARCHAR,
+            lpep_pickup_datetime    VARCHAR,
+            lpep_dropoff_datetime   VARCHAR,
+            store_and_fwd_flag      CHAR,
+            RatecodeID              VARCHAR,
+            PULocationID            VARCHAR,
+            DOLocationID            VARCHAR,
+            passenger_count         INT,
+            trip_distance           DECIMAL,
+            fare_amount             DECIMAL,
+            extra                   DECIMAL,
+            mta_tax                 DECIMAL,
+            tip_amount              DECIMAL,    
+            tolls_amount            DECIMAL,
+            ehail_fee               DECIMAL,
+            improvement_surcharge   DECIMAL,
+            total_amount            DECIMAL,
+            payment_type            VARCHAR,
+            trip_type               VARCHAR,
+            congestion_surcharge    DECIMAL
         )
     '''
 
     create_stage_yellow = '''
         CREATE TABLE IF NOT EXISTS public.stage_yellow (
-            VendorID                VARCHAR(255),
-            tpep_pickup_datetime    VARCHAR(255),
-            tpep_dropoff_datetime   VARCHAR(255),
-            passenger_count         VARCHAR(255),
-            trip_distance           VARCHAR(255),
-            RatecodeID              VARCHAR(255),
-            store_and_fwd_flag      VARCHAR(255),
-            PULocationID            VARCHAR(255),
-            DOLocationID            VARCHAR(255),
-            payment_type            VARCHAR(255),
-            fare_amount             VARCHAR(255),
-            extra                   VARCHAR(255),
-            mta_tax                 VARCHAR(255),
-            tip_amount              VARCHAR(255),
-            tolls_amount            VARCHAR(255),
-            improvement_surcharge   VARCHAR(255),
-            total_amount            VARCHAR(255),
-            congestion_surcharge    VARCHAR(255)
+            VendorID                VARCHAR,
+            tpep_pickup_datetime    VARCHAR,
+            tpep_dropoff_datetime   VARCHAR,
+            passenger_count         INT,
+            trip_distance           DECIMAL,
+            RatecodeID              VARCHAR,
+            store_and_fwd_flag      CHAR,
+            PULocationID            VARCHAR,
+            DOLocationID            VARCHAR,
+            payment_type            VARCHAR,
+            fare_amount             DECIMAL,
+            extra                   DECIMAL,
+            mta_tax                 DECIMAL,
+            tip_amount              DECIMAL,
+            tolls_amount            DECIMAL,
+            improvement_surcharge   DECIMAL,
+            total_amount            DECIMAL,
+            congestion_surcharge    DECIMAL
         )
     '''
 
     create_stage_fhv = '''
         CREATE TABLE IF NOT EXISTS public.stage_fhv (
-            dispatching_base_num    VARCHAR(255),
-            pickup_datetime         VARCHAR(255),
-            dropoff_datetime        VARCHAR(255),
-            puLocationID            VARCHAR(255),
-            doLocationID            VARCHAR(255),
-            SR_Flag                 VARCHAR(255)
+            dispatching_base_num    VARCHAR,
+            pickup_datetime         VARCHAR,
+            dropoff_datetime        VARCHAR,
+            puLocationID            VARCHAR,
+            doLocationID            VARCHAR,
+            SR_Flag                 VARCHAR
         )
     '''
 
     create_stage_fhvhv = '''
             CREATE TABLE IF NOT EXISTS public.stage_fhvhv (
-                hvfhs_license_num       VARCHAR(255),
-                dispatching_base_num    VARCHAR(255),
-                pickup_datetime         VARCHAR(255),
-                dropoff_datetime        VARCHAR(255),
-                puLocationID            VARCHAR(255),
-                doLocationID            VARCHAR(255),
-                SR_Flag                 VARCHAR(255)
+                hvfhs_license_num       VARCHAR,
+                dispatching_base_num    VARCHAR,
+                pickup_datetime         VARCHAR,
+                dropoff_datetime        VARCHAR,
+                puLocationID            VARCHAR,
+                doLocationID            VARCHAR,
+                SR_Flag                 VARCHAR
             )
         '''
 
@@ -85,6 +85,17 @@ class SqlQueries:
         create_stage_yellow,
         create_stage_fhv,
         create_stage_fhvhv
+    ]
+
+    edit_staging = """
+        ALTER TABLE {table} rename column {columnA} to {columnB};
+    """
+
+    edit_stage_tables = [
+        edit_staging.format(table='stage_green', columnA='lpep_pickup_datetime', columnB='pickup_datetime'),
+        edit_staging.format(table='stage_green', columnA='lpep_dropoff_datetime', columnB='dropoff_datetime'),
+        edit_staging.format(table='stage_yellow', columnA='tpep_pickup_datetime', columnB='pickup_datetime'),
+        edit_staging.format(table='stage_yellow', columnA='tpep_dropoff_datetime', columnB='dropoff_datetime')
     ]
 
     create_time_table = """
@@ -99,61 +110,58 @@ class SqlQueries:
         );
     """
 
-    create_data_tables = [create_time_table]
+    create_taxi_table = """
+        CREATE TABLE IF NOT EXISTS taxi(
+            VendorID                VARCHAR,
+            pickup_datetime         VARCHAR,
+            dropoff_datetime        VARCHAR,
+            store_and_fwd_flag      CHAR,
+            RatecodeID              VARCHAR,
+            PULocationID            VARCHAR,
+            DOLocationID            VARCHAR,
+            passenger_count         INT,
+            trip_distance           DECIMAL,
+            fare_amount             DECIMAL,
+            extra                   DECIMAL,
+            mta_tax                 DECIMAL,
+            tip_amount              DECIMAL,    
+            tolls_amount            DECIMAL,
+            improvement_surcharge   DECIMAL,
+            total_amount            DECIMAL,
+            payment_type            VARCHAR,
+            congestion_surcharge    DECIMAL
+        );
+    """
 
-    move_time_pickup_green = '''
+    create_data_tables = [create_time_table, create_taxi_table]
+
+    move_staging_time = '''
         INSERT INTO public.time (trip_timestamp, hour, day, week, month, year, weekday)
-        SELECT 	to_date (lpep_pickup_datetime, 'YYYY-MM-DD HH24:MI:SS') as DT, 
+        SELECT 	to_date ({column}, 'YYYY-MM-DD HH24:MI:SS') as DT, 
                 extract(hour from DT), 
                 extract(day from DT), 
                 extract(week from DT), 
                 extract(month from DT), 
                 extract(year from DT), 
                 extract(dayofweek from DT)
-        FROM public.stage_green
+        FROM public.{table}
     '''
-
-    move_time_drop_off_green = '''
-            INSERT INTO public.time (trip_timestamp, hour, day, week, month, year, weekday)
-            SELECT 	to_date (lpep_pickup_datetime, 'YYYY-MM-DD HH24:MI:SS') as DT, 
-                    extract(hour from DT), 
-                    extract(day from DT), 
-                    extract(week from DT), 
-                    extract(month from DT), 
-                    extract(year from DT), 
-                    extract(dayofweek from DT)
-            FROM public.stage_green
-        '''
-
-    move_time_pickup_yellow = '''
-        INSERT INTO public.time (trip_timestamp, hour, day, week, month, year, weekday)
-        SELECT 	to_date (tpep_pickup_datetime, 'YYYY-MM-DD HH24:MI:SS') as DT, 
-                extract(hour from DT), 
-                extract(day from DT), 
-                extract(week from DT), 
-                extract(month from DT), 
-                extract(year from DT), 
-                extract(dayofweek from DT)
-        FROM public.stage_yellow
-    '''
-
-    move_time_drop_off_yellow = '''
-            INSERT INTO public.time (trip_timestamp, hour, day, week, month, year, weekday)
-            SELECT 	to_date (tpep_pickup_datetime, 'YYYY-MM-DD HH24:MI:SS') as DT, 
-                    extract(hour from DT), 
-                    extract(day from DT), 
-                    extract(week from DT), 
-                    extract(month from DT), 
-                    extract(year from DT), 
-                    extract(dayofweek from DT)
-            FROM public.stage_yellow
-        '''
 
     move_time_data = [
-        move_time_pickup_green,
-        move_time_drop_off_green,
-        move_time_pickup_yellow,
-        move_time_drop_off_yellow
+        move_staging_time.format(table='stage_green', column='pickup_datetime'),
+        move_staging_time.format(table='stage_green', column='dropoff_datetime'),
+        move_staging_time.format(table='stage_yellow', column='pickup_datetime'),
+        move_staging_time.format(table='stage_yellow', column='dropoff_datetime')
+    ]
+
+    move_staging__taxi = '''
+        ALTER TABLE taxi APPEND FROM {table} 
+        IGNOREEXTRA
+    '''
+
+    move_ride_data = [
+        move_staging__taxi.format(table='stage_green'),
+        move_staging__taxi.format(table='stage_yellow')
     ]
 
     analyse_pick_up = '''

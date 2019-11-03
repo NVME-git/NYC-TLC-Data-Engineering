@@ -2,8 +2,9 @@ from datetime import datetime, timedelta
 import os
 from airflow import DAG
 from airflow.operators.postgres_operator import *
+from airflow.operators.dummy_operator import DummyOperator
 from helpers import SqlQueries
-from operators import S3ToRedshiftOperator
+from operators import S3ToRedshiftOperator, DataQualityOperator
 
 default_args = {
     'owner': 'nabeel',
@@ -23,65 +24,86 @@ dag = DAG('NYC_TLC_DAG',
           catchup=False
           )
 
-# t0 = PostgresOperator(
-#     dag=dag,
-#     task_id='create_stage_tables',
-#     postgres_conn_id='redshift',
-#     sql=SqlQueries.create_stage_tables,
-#     autocommit=True
-# )
-#
-# t1a = S3ToRedshiftOperator(
-#     dag=dag,
-#     task_id='copy_taxi_zones',
-#     redshift_conn_id='redshift',
-#     aws_credentials_id='aws_credentials',
-#     table='taxi_zones',
-#     s3_bucket='nyc-tlc',
-#     s3_key='misc/taxi _zone_lookup.csv'
-# )
-#
-# t1b = S3ToRedshiftOperator(
-#     dag=dag,
-#     task_id='copy_green_data',
-#     redshift_conn_id='redshift',
-#     aws_credentials_id='aws_credentials',
-#     table='stage_green',
-#     s3_bucket='nyc-tlc',
-#     s3_key='trip data/green_tripdata_2019-06.csv'
-# )
-#
-# t1c = S3ToRedshiftOperator(
-#     dag=dag,
-#     task_id='copy_yellow_data',
-#     redshift_conn_id='redshift',
-#     aws_credentials_id='aws_credentials',
-#     table='stage_yellow',
-#     s3_bucket='nyc-tlc',
-#     s3_key='trip data/yellow_tripdata_2019-06.csv'
-# )
-#
-# t1d = S3ToRedshiftOperator(
-#     dag=dag,
-#     task_id='copy_fhv_data',
-#     redshift_conn_id='redshift',
-#     aws_credentials_id='aws_credentials',
-#     table='stage_fhv',
-#     s3_bucket='nyc-tlc',
-#     s3_key='trip data/fhv_tripdata_2019-06.csv'
-# )
-#
-# t1e = S3ToRedshiftOperator(
-#     dag=dag,
-#     task_id='copy_fhvhv_data',
-#     redshift_conn_id='redshift',
-#     aws_credentials_id='aws_credentials',
-#     table='stage_fhvhv',
-#     s3_bucket='nyc-tlc',
-#     s3_key='trip data/fhvhv_tripdata_2019-06.csv'
-# )
+t0 = PostgresOperator(
+    dag=dag,
+    task_id='create_stage_tables',
+    postgres_conn_id='redshift',
+    sql=SqlQueries.create_stage_tables,
+    autocommit=True
+)
 
-t2 = PostgresOperator(
+t1a = S3ToRedshiftOperator(
+    dag=dag,
+    task_id='copy_taxi_zones',
+    redshift_conn_id='redshift',
+    aws_credentials_id='aws_credentials',
+    table='taxi_zones',
+    s3_bucket='nyc-tlc',
+    s3_key='misc/taxi _zone_lookup.csv'
+)
+
+t1b = S3ToRedshiftOperator(
+    dag=dag,
+    task_id='copy_green_data',
+    redshift_conn_id='redshift',
+    aws_credentials_id='aws_credentials',
+    table='stage_green',
+    s3_bucket='nyc-tlc',
+    s3_key='trip data/green_tripdata_2019-06.csv'
+)
+
+t1c = S3ToRedshiftOperator(
+    dag=dag,
+    task_id='copy_yellow_data',
+    redshift_conn_id='redshift',
+    aws_credentials_id='aws_credentials',
+    table='stage_yellow',
+    s3_bucket='nyc-tlc',
+    s3_key='trip data/yellow_tripdata_2019-06.csv'
+)
+
+t1d = S3ToRedshiftOperator(
+    dag=dag,
+    task_id='copy_fhv_data',
+    redshift_conn_id='redshift',
+    aws_credentials_id='aws_credentials',
+    table='stage_fhv',
+    s3_bucket='nyc-tlc',
+    s3_key='trip data/fhv_tripdata_2019-06.csv'
+)
+
+t1e = S3ToRedshiftOperator(
+    dag=dag,
+    task_id='copy_fhvhv_data',
+    redshift_conn_id='redshift',
+    aws_credentials_id='aws_credentials',
+    table='stage_fhvhv',
+    s3_bucket='nyc-tlc',
+    s3_key='trip data/fhvhv_tripdata_2019-06.csv'
+)
+
+t2 = DataQualityOperator(
+    task_id='Staging_data_quality_checks',
+    dag=dag,
+    redshift_conn_id="redshift",
+    tables=[
+        'taxi_zones',
+        'stage_green',
+        'stage_yellow',
+        'stage_fhv',
+        'stage_fhvhv'
+    ]
+)
+
+t3a = PostgresOperator(
+    dag=dag,
+    task_id='edit_stage_tables',
+    postgres_conn_id='redshift',
+    sql=SqlQueries.edit_stage_tables,
+    autocommit=True
+)
+
+t3b = PostgresOperator(
     dag=dag,
     task_id='create_data_tables',
     postgres_conn_id='redshift',
@@ -89,15 +111,40 @@ t2 = PostgresOperator(
     autocommit=True
 )
 
-t3 = PostgresOperator(
+t4 = DummyOperator(
+    task_id='Join_Modeling',
+    dag=dag
+)
+
+t5a = PostgresOperator(
     dag=dag,
-    task_id='move_time_data',
+    task_id='populate_time_table',
     postgres_conn_id='redshift',
     sql=SqlQueries.move_time_data,
     autocommit=True
 )
 
+t5b = PostgresOperator(
+    dag=dag,
+    task_id='populate_ride_tables',
+    postgres_conn_id='redshift',
+    sql=SqlQueries.move_ride_data,
+    autocommit=True
+)
 
-# t0 >> [t1a, t1b, t1c, t1d, t1e] >> t2
+t6 = DataQualityOperator(
+    task_id='Joined_data_quality_checks',
+    dag=dag,
+    redshift_conn_id="redshift",
+    tables=[
+        'time',
+        'taxi'
+    ]
+)
 
-t2 >> t3
+t0 >> [t1a, t1b, t1c, t1d, t1e] >> t2
+
+t2 >> [t3a, t3b] >> t4
+
+t4 >> [t5a, t5b] >> t6
+
