@@ -4,7 +4,7 @@ from airflow import DAG
 from airflow.operators.postgres_operator import *
 from airflow.operators.dummy_operator import DummyOperator
 from helpers import SqlQueries
-from operators import S3ToRedshiftOperator, DataQualityOperator
+from operators import S3ToRedshiftOperator, DataQualityOperator, DataAnalysisOperator
 
 default_args = {
     'owner': 'nabeel',
@@ -38,8 +38,9 @@ t1a = S3ToRedshiftOperator(
     redshift_conn_id='redshift',
     aws_credentials_id='aws_credentials',
     table='taxi_zones',
-    s3_bucket='nyc-tlc',
-    s3_key='misc/taxi _zone_lookup.csv'
+    s3_bucket='nyc-tlc-udacity',
+    s3_key='taxi_zones.json',
+    jsonpath='jsonpaths.json'
 )
 
 t1b = S3ToRedshiftOperator(
@@ -142,9 +143,16 @@ t6 = DataQualityOperator(
     ]
 )
 
+t7 = DataAnalysisOperator(
+    task_id='Data_Analytics',
+    dag=dag,
+    redshift_conn_id="redshift",
+    queries=SqlQueries.analysisQueries
+)
+
 t0 >> [t1a, t1b, t1c, t1d, t1e] >> t2
 
 t2 >> [t3a, t3b] >> t4
 
-t4 >> [t5a, t5b] >> t6
+t4 >> [t5a, t5b] >> t6 >> t7
 

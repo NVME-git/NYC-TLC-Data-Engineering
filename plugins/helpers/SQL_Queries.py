@@ -164,35 +164,16 @@ class SqlQueries:
         move_staging__taxi.format(table='stage_yellow')
     ]
 
-    analyse_pick_up = '''
+    analyse_location = '''
         select 
             zones.borough,
             sum(ride.total_amount) as total
         from 
-            public.stage_green as ride
+            public.taxi as ride
         join
             public.taxi_zones as zones
             on
-                ride.pulocationid = zones.locationid
-        group by
-            zones.borough
-        order by
-            total DESC
-        limit 
-            10
-        ;
-    '''
-
-    analyse_drop_off = '''
-        select 
-            zones.borough,
-            sum(ride.total_amount) as total
-        from 
-            public.stage_green as ride
-        join
-            public.taxi_zones as zones
-            on
-                ride.dolocationid = zones.locationid
+                ride.{locationColumn} = zones.locationid
         group by
             zones.borough
         order by
@@ -203,6 +184,6 @@ class SqlQueries:
     '''
 
     analysisQueries = [
-        analyse_pick_up,
-        analyse_drop_off
+        analyse_location.format(locationColumn='PULocationID'),
+        analyse_location.format(locationColumn='DOLocationID')
     ]

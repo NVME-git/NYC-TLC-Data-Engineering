@@ -1,0 +1,8 @@
+{
+    "jsonpaths": [
+       "$['LocationID']",
+       "$['Borough']",
+       "$['Zone']",
+       "$['service_zone']"
+    ]
+}

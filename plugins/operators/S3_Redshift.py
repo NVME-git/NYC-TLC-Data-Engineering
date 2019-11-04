@@ -5,7 +5,7 @@ from airflow.utils.decorators import apply_defaults
 
 
 class S3ToRedshiftOperator(BaseOperator):
-    # ui_color = '#358140'
+    ui_color = '#5496eb'
     template_fields = ("s3_key",)
     copy_sql = """
         COPY public.{sink}
@@ -20,7 +20,14 @@ class S3ToRedshiftOperator(BaseOperator):
         EMPTYASNULL 
 ;
     """
-
+    copy_sql_JSON = """
+        COPY public.{sink}
+        FROM '{source}'
+        REGION 'us-east-1'
+        ACCESS_KEY_ID '{id}'
+        SECRET_ACCESS_KEY '{secret}'
+        FORMAT AS JSON '{jsonpath}'
+    """
     @apply_defaults
     def __init__(self,
                  redshift_conn_id="",
@@ -28,6 +35,7 @@ class S3ToRedshiftOperator(BaseOperator):
                  table="",
                  s3_bucket="",
                  s3_key="",
+                 jsonpath='',
                  *args, **kwargs):
 
         super(S3ToRedshiftOperator, self).__init__(*args, **kwargs)
@@ -36,6 +44,7 @@ class S3ToRedshiftOperator(BaseOperator):
         self.aws_credentials_id = aws_credentials_id
         self.s3_bucket = s3_bucket
         self.s3_key = s3_key
+        self.jsonPath = jsonpath
         self.execution_date = kwargs.get('execution_date')
 
     def execute(self, context):
@@ -72,12 +81,21 @@ class S3ToRedshiftOperator(BaseOperator):
         #         s3_json_path
         #     )
         #     self.log.info("Using regular formatted SQL")
-        formatted_sql = S3ToRedshiftOperator.copy_sql.format(
-                            sink=self.table,
-                            source=s3_path,
-                            id=credentials.access_key,
-                            secret=credentials.secret_key
-                        )
+        if self.jsonPath is '':
+            formatted_sql = S3ToRedshiftOperator.copy_sql.format(
+                sink=self.table,
+                source=s3_path,
+                id=credentials.access_key,
+                secret=credentials.secret_key
+            )
+        else:
+            formatted_sql = S3ToRedshiftOperator.copy_sql_JSON.format(
+                sink=self.table,
+                source=s3_path,
+                id=credentials.access_key,
+                secret=credentials.secret_key,
+                jsonpath="s3://{}/{}".format(self.s3_bucket, self.jsonPath)
+            )
         redshift.run(formatted_sql)
 
 
