@@ -20,6 +20,19 @@ class S3ToRedshiftOperator(BaseOperator):
         EMPTYASNULL 
 ;
     """
+    copy_sql_time = """
+        COPY public.{sink}
+        FROM '{source}_{year}-{month}.csv'
+        REGION 'us-east-1'
+        ACCESS_KEY_ID '{id}'
+        SECRET_ACCESS_KEY '{secret}'
+        IGNOREHEADER 1
+        delimiter ','
+        IGNOREBLANKLINES
+        REMOVEQUOTES
+        EMPTYASNULL 
+;
+    """
     copy_sql_JSON = """
         COPY public.{sink}
         FROM '{source}'
@@ -61,33 +74,23 @@ class S3ToRedshiftOperator(BaseOperator):
         rendered_key = self.s3_key.format(**context)
         s3_path = "s3://{}/{}".format(self.s3_bucket, rendered_key)
 
-        # Backfill a specific date
-        # if self.execution_date:
-        #     formatted_sql = S3ToRedshiftOperator.copy_sql_time.format(
-        #         self.table,
-        #         s3_path,
-        #         self.execution_date.strftime("%Y"),
-        #         self.execution_date.strftime("%d"),
-        #         credentials.access_key,
-        #         credentials.secret_key
-        #     )
-        #     self.log.info("Using Date formatted SQL")
-        # else:
-        #     formatted_sql = S3ToRedshiftOperator.copy_sql.format(
-        #         self.table,
-        #         s3_path,
-        #         credentials.access_key,
-        #         credentials.secret_key,
-        #         s3_json_path
-        #     )
-        #     self.log.info("Using regular formatted SQL")
         if self.jsonPath is '':
-            formatted_sql = S3ToRedshiftOperator.copy_sql.format(
-                sink=self.table,
-                source=s3_path,
-                id=credentials.access_key,
-                secret=credentials.secret_key
-            )
+            if self.execution_date:
+                formatted_sql = S3ToRedshiftOperator.copy_sql_time.format(
+                    sink=self.table,
+                    source=s3_path,
+                    year=self.execution_date.strftime("%Y"),
+                    month=self.execution_date.strftime("%m"),
+                    id=credentials.access_key,
+                    secret=credentials.secret_key
+                )
+            else:
+                formatted_sql = S3ToRedshiftOperator.copy_sql.format(
+                    sink=self.table,
+                    source=s3_path,
+                    id=credentials.access_key,
+                    secret=credentials.secret_key
+                )
         else:
             formatted_sql = S3ToRedshiftOperator.copy_sql_JSON.format(
                 sink=self.table,
