@@ -1,10 +1,10 @@
 class SqlQueries:
     create_taxi_zones='''
     CREATE TABLE IF NOT EXISTS public.taxi_zones (
-        borough VARCHAR(255),
         locationid VARCHAR(255),
-        service_zone VARCHAR(255),
-        zone VARCHAR(255)
+        borough VARCHAR(255),
+        zone VARCHAR(255),
+        service_zone VARCHAR(255)
     )
     '''
 
@@ -111,7 +111,7 @@ class SqlQueries:
     """
 
     create_taxi_table = """
-        CREATE TABLE IF NOT EXISTS taxi(
+        CREATE TABLE IF NOT EXISTS taxi_rides(
             VendorID                VARCHAR,
             pickup_datetime         VARCHAR,
             dropoff_datetime        VARCHAR,
@@ -155,7 +155,7 @@ class SqlQueries:
     ]
 
     move_staging__taxi = '''
-        ALTER TABLE taxi APPEND FROM {table} 
+        ALTER TABLE taxi_rides APPEND FROM {table} 
         IGNOREEXTRA
     '''
 
@@ -167,13 +167,13 @@ class SqlQueries:
     analyse_location = '''
         select 
             zones.borough,
-            sum(ride.total_amount) as total
+            sum(rides.total_amount) as total
         from 
-            public.taxi as ride
+            public.taxi_rides as rides
         join
             public.taxi_zones as zones
             on
-                ride.{locationColumn} = zones.locationid
+                rides.{locationColumn} = zones.locationid
         group by
             zones.borough
         order by

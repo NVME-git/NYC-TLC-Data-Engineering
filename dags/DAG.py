@@ -134,12 +134,12 @@ t5b = PostgresOperator(
 )
 
 t6 = DataQualityOperator(
-    task_id='Joined_data_quality_checks',
+    task_id='Model_data_quality_checks',
     dag=dag,
     redshift_conn_id="redshift",
     tables=[
         'time',
-        'taxi'
+        'taxi_rides'
     ]
 )
 
@@ -155,4 +155,3 @@ t0 >> [t1a, t1b, t1c, t1d, t1e] >> t2
 t2 >> [t3a, t3b] >> t4
 
 t4 >> [t5a, t5b] >> t6 >> t7
-
