@@ -5,6 +5,10 @@ from airflow.utils.decorators import apply_defaults
 
 
 class S3ToRedshiftOperator(BaseOperator):
+    """
+    S3ToRedshiftOperator controls the movement of csv trip data and json map data from AWS S3 to Redshift both manually
+    and automatically using the environment execution date.
+    """
     ui_color = '#5496eb'
     template_fields = ("s3_key",)
     copy_sql = """

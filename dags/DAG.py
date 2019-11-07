@@ -1,3 +1,6 @@
+"""
+DAG is a compilation and arrangement of tasks to be run on a monthly basis.
+"""
 from datetime import datetime, timedelta
 import os
 from airflow import DAG

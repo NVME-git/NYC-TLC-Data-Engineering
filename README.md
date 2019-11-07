@@ -58,7 +58,7 @@ can be downloaded for further reference.
  
 FHV  data  includes  trip  data  from  high-volume  for-hire  vehicle  bases  (bases for  companies dispatching  10,000+
 trip  per  day,  meaning  Uber,  Lyft,  Via,  and  Juno),  community  livery  bases, luxury limousine bases, and black 
-car bases. The TLC began receiving FHV trip data from bases in 2015, but the amount of information that has been  
+car bases. The TLC began receiving FHV trip data from bases in 2015, but the amount of information that has been 
 provided  has  changed  over  time.  In 2015,  only  the  dispatching  base  number,  pickup datetime, and the 
 location of the pickup (see section on matching zone IDs below) were provided 
 4to  the  TLC.  In  summer  of  2017,  the  TLC  mandated  that  the  companies  provide  the  drop-off date/time 
@@ -79,7 +79,7 @@ These numbers correspond to taxi zones, which may be downloaded as a table or ma
 records using a join. 
 The data is currently available on the [Open Data Portal](https://data.cityofnewyork.us/Transportation/NYC-Taxi-Zones/d3c5-ddgc)
 , or on the  trip records    page on    the [TLC website](https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page)
-, under Taxi Zone Maps and Lookup Tables.
+, under Taxi Zone Maps and Lookup Tables. 
 
 ##### Taxi zone map of Bronx
 ![Bronx Map](maps/taxi_zone_map_bronx.jpg)
@@ -89,5 +89,9 @@ The data is currently available on the [Open Data Portal](https://data.cityofnew
 Only data from 2019 onwards will be considered because of the recent changes in February 2019.
  Data for each taxi type is stored in a CSV file for each  month in  the **'trip data'** folder. 
  Information about the different taxi zones and borough maps are located in the **'misc'** folder.
+ A duplicate taxi zones table was uploaded to a [public S3 bucket](https://s3.console.aws.amazon.com/s3/buckets/nyc-tlc-udacity/) 
+ in JSON format with a representative manifest file for reading it into Redshift. This was done to meet the project 
+ specifications of multiple data source formats. 
 
- The data required for this project is of very high quality. The full data set has ...
+ The data required for this project is of very high quality. 
+ 

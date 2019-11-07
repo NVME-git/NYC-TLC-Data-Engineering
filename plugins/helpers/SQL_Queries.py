@@ -1,4 +1,8 @@
 class SqlQueries:
+    """
+    This function hosts the various SQL queries used to perform tasks in Amazon Redshift.
+    These queries create tables, copy data from S3 to Redshift, modify the data model and run data analysis tasks.
+    """
     create_taxi_zones='''
     CREATE TABLE IF NOT EXISTS public.taxi_zones (
         locationid VARCHAR(255),
