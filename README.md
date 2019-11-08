@@ -11,6 +11,13 @@ schema for analytics purposes. The main purpose of this exercise is to provide a
 large volume of trip logs on a monthly basis by taxi zone and NYC borough. This data can then be used to redistribute 
 vehicles appropriately where needed.
 
+This project uses Apache Airflow to automate and orchestrate ETL and data analysis tasks on new data as it becomes 
+available on a monthly basis. Amazon S3 is where the source data resides. A second S3 bucket was made for the purpose of 
+showcasing the ability of airflow and redshift to source multiple data sources and formats easily. AWS Redshift is used 
+because it is fast, with high performance and is horizontally scalable with  massive storage capacity. 
+For reference, it takes approximately 2 minutes in order to move the 21 million rows (1.6 GB) of the fhvhv rides table 
+from S3 to Redshift. 
+
 ##### Taxi zone map of Brooklyn
 ![Brooklyn Map](maps/taxi_zone_map_brooklyn.jpg)
 
@@ -93,5 +100,49 @@ Only data from 2019 onwards will be considered because of the recent changes in 
  in JSON format with a representative manifest file for reading it into Redshift. This was done to meet the project 
  specifications of multiple data source formats. 
 
- The data required for this project is of very high quality. 
+ The data required for this project is of very high quality, however minor cleaning needed to be done while reading data 
+ from S3 to Redshift. The trip data needed to be modified during the load step by including the following code in the 
+ query: 
+ `IGNOREHEADER 1
+        delimiter ','
+        IGNOREBLANKLINES
+        REMOVEQUOTES
+        EMPTYASNULL`.
+ Secondly, a manifest file needed to be created to mediate loading of the taxi zones data.
+ 
+ The following steps are performed by the DAG:
+1. Staging tables are created using the PostgresOperator
+2. A configured S3ToRedshiftOperator is used to move taxi zone data (JSON) and ride data (CSV) from S3 to redshift.
+3. The first DataQualityOperator is used to validate that data has infact been populated into the staging tables.
+4. The PostgresOperator is again used to create the final data model and edit the staging tables structure in 
+preparation for merging.
+5. The PostgresOperator is used to move data from the staging tables to the taxi_rides table and create the time table.
+6. The second DataQualityOperator is used to check that the final tables have been populated as expected.
+7. The DataAnalysisOperator is used to run analytics queries on the data model.
+
+The purpose of the final data model is to have a table which allows ad hoc queries regarding the number and total income
+of each borough for taxis and is joined to avoid having to join the green and yellow taxi data at run time.
+The model also included staging tables for fhv and fhvhv rides which can be queried to 
+determine the number of rides per ride type per borough.
+
+### Further considerations
+If the following scenarios occur, the effect on the project will be as follows:
+1.    The data was increased by 100x.
+
+    - Redshift is configured to scale horizontally so increasing the data would only increase the amount of time taken 
+    for data to be moved from s3 to redshift and for queries, but the affect would be minimal.
+    
+2.    The pipelines would be run on a daily basis by 7 am every day.
+
+    - Airflow can easily be configured to run on a daily schedule and the Redshift cluster would need to be up daily 
+    instead of monthly which would incur a greater cost. However, given that data is only uploaded once a month, it 
+    would make more sense to move the data to regular database system for cost sake. 
+    
+3.    The database needed to be accessed by 100+ people.
+
+    - Redshift is able to cope with high traffic volumes without affecting performance. 
+
+
+
+  
  
