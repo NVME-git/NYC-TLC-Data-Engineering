@@ -125,6 +125,38 @@ of each borough for taxis and is joined to avoid having to join the green and ye
 The model also included staging tables for fhv and fhvhv rides which can be queried to 
 determine the number of rides per ride type per borough.
 
+### How to run this project
+
+1. Create an IAM role on AWS
+    * Attach the AmazonS3ReadOnlyAccess policy.
+2. Create a security group in the Amazon EC2 console with the following values:
+    * Type: Custom TCP Rule
+    * Protocol: TCP
+    * Port Range: 5439
+    * Source: select Custom IP, then type 0.0.0.0/0
+3. Launch a redshift cluster using the IAM role and security group you defined previously.
+    * For this project, dc2.large cluster configuration is sufficient.
+    * CPU: 7 EC2 compute units (2 virtual cores) per node
+    * Memory: 15.25 GiB per node
+    * Storage: 160 GB SSD per node
+    * Cluster type: Single node   
+4. Create an IAM user to allow you to issue commands to both Redshift and S3
+    * Assign programmatic access with the following policies:
+        * AmazonRedshiftFullAccess
+        * AmazonS3ReadOnlyAccess
+    * Save your credentials because it is only accessible at creation.
+5. Install Apache-Airflow and dependencies
+    * Run airflow:
+        * airflow init
+        * airflow scheduler
+        * airflow webserver
+    * Create the following connections:
+        * redshift: a postgres connection with your cluster details.
+        * aws_credentials: an Amazon connection with your IAM user key.
+6. The S3 bucket "nyc-tlc-udacity" has been created as  of (8 November 2019) with the 'taxi_zones.json' file and 
+'jsonpaths.json' manifest. If the bucket is no longer accessible at any time, you may upload these files to your own S3 
+bucket and change the s3_bucket value in the task t1a operator to your own bucket name.    
+
 ### Further considerations
 If the following scenarios occur, the effect on the project will be as follows:
 1.    The data was increased by 100x.
